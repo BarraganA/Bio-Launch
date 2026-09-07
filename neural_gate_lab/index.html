@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neural Gate Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Bio-Launch · Neural Lab</p>
+        <h1>Neural Gate Lab</h1>
+      </div>
+      <p class="step-note">Activación fija: escalón</p>
+    </header>
+
+    <section class="lab">
+      <div class="neuron-panel">
+        <div class="diagram-wrap">
+          <svg id="neuronSvg" viewBox="0 0 760 470" role="img" aria-labelledby="svgTitle svgDesc">
+            <title id="svgTitle">Neurona artificial configurable</title>
+            <desc id="svgDesc">
+              Dos entradas binarias, dos pesos, un sesgo, una neurona que calcula z,
+              una función de activación escalón y una salida binaria.
+            </desc>
+
+            <!-- Conexiones -->
+            <line id="line1" class="connection" x1="135" y1="140" x2="350" y2="220" stroke-width="4"/>
+            <line id="line2" class="connection" x1="135" y1="330" x2="350" y2="250" stroke-width="4"/>
+            <line class="connection" x1="420" y1="235" x2="510" y2="235" stroke-width="4"/>
+            <line class="connection" x1="600" y1="235" x2="675" y2="235" stroke-width="4"/>
+            <line class="connection" x1="385" y1="390" x2="385" y2="305" stroke-width="4"/>
+
+            <!-- Pulso -->
+            <circle id="pulse" class="pulse" cx="420" cy="235" r="7" fill="#d31f60"/>
+
+            <!-- Entrada x1 -->
+            <circle id="x1Node" class="node input-node off" cx="105" cy="140" r="38"
+                    tabindex="0" role="button" aria-label="Entrada x1, valor 0"/>
+            <text class="input-label" x="105" y="132" text-anchor="middle">x₁</text>
+            <text id="x1ValueText" class="input-value" x="105" y="158" text-anchor="middle">0</text>
+
+            <!-- Entrada x2 -->
+            <circle id="x2Node" class="node input-node off" cx="105" cy="330" r="38"
+                    tabindex="0" role="button" aria-label="Entrada x2, valor 0"/>
+            <text class="input-label" x="105" y="322" text-anchor="middle">x₂</text>
+            <text id="x2ValueText" class="input-value" x="105" y="348" text-anchor="middle">0</text>
+
+            <!-- Pesos -->
+            <text id="w1Label" class="weight-label" x="220" y="150" text-anchor="middle">w₁ = 1.0</text>
+            <text id="w2Label" class="weight-label" x="220" y="320" text-anchor="middle">w₂ = 1.0</text>
+
+            <!-- Neurona -->
+            <circle class="neuron-core" cx="385" cy="235" r="58"/>
+            <text class="small-label" x="385" y="220" text-anchor="middle">z</text>
+            <text id="zInside" class="math-label" x="385" y="257" text-anchor="middle">−0.5</text>
+
+            <!-- Sesgo -->
+            <circle class="node" cx="385" cy="420" r="28"/>
+            <text class="input-label" x="385" y="428" text-anchor="middle">b</text>
+            <text id="bLabel" class="weight-label" x="430" y="405">−0.5</text>
+
+            <!-- Activación -->
+            <rect class="activation-box" x="510" y="185" width="90" height="100" rx="12"/>
+            <text class="small-label" x="555" y="213" text-anchor="middle">escalón</text>
+            <text class="small-label" x="555" y="241" text-anchor="middle">z ≥ 0 → 1</text>
+            <text class="small-label" x="555" y="265" text-anchor="middle">z &lt; 0 → 0</text>
+
+            <!-- Salida -->
+            <circle id="outputNode" class="node output-node off" cx="705" cy="235" r="38"/>
+            <text class="input-label" x="705" y="226" text-anchor="middle">y</text>
+            <text id="outputValueText" class="input-value" x="705" y="253" text-anchor="middle">0</text>
+          </svg>
+
+          <div class="calc" aria-live="polite">
+            <p class="calc-title">Cálculo actual</p>
+            <p id="symbolicEquation" class="equation">z = w₁x₁ + w₂x₂ + b</p>
+            <p id="numericEquation" class="equation">
+              z = (1)(0) + (1)(0) − 0.5 = <strong>−0.5</strong>
+            </p>
+            <p id="activationReadout" class="activation-readout">
+              Como z &lt; 0, la salida es y = 0.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="controls" aria-label="Controles de la neurona">
+        <h2>Parámetros</h2>
+
+        <div class="control-group">
+          <div class="control-title">
+            <span>Entradas</span>
+            <span class="symbol">x₁, x₂</span>
+          </div>
+
+          <div class="input-toggle-row">
+            <button id="x1Button" class="bit-button" type="button" aria-pressed="false">x₁ = 0</button>
+            <button id="x2Button" class="bit-button" type="button" aria-pressed="false">x₂ = 0</button>
+          </div>
+
+          <label class="switch-row">
+            <input id="useX2" type="checkbox" checked />
+            <span>Usar segunda entrada</span>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <div class="control-title">
+            <span>Peso 1</span>
+            <span class="symbol">w₁</span>
+          </div>
+          <div class="slider-row">
+            <input id="w1Range" type="range" min="-5" max="5" step="0.1" value="1" aria-label="Peso w1" />
+            <input id="w1Number" type="number" min="-5" max="5" step="0.1" value="1" aria-label="Valor numérico de w1" />
+          </div>
+          <div class="range-ends"><span>−5</span><span>5</span></div>
+        </div>
+
+        <div class="control-group" id="w2Group">
+          <div class="control-title">
+            <span>Peso 2</span>
+            <span class="symbol">w₂</span>
+          </div>
+          <div class="slider-row">
+            <input id="w2Range" type="range" min="-5" max="5" step="0.1" value="1" aria-label="Peso w2" />
+            <input id="w2Number" type="number" min="-5" max="5" step="0.1" value="1" aria-label="Valor numérico de w2" />
+          </div>
+          <div class="range-ends"><span>−5</span><span>5</span></div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-title">
+            <span>Sesgo</span>
+            <span class="symbol">b</span>
+          </div>
+          <div class="slider-row">
+            <input id="bRange" type="range" min="-5" max="5" step="0.1" value="-0.5" aria-label="Sesgo b" />
+            <input id="bNumber" type="number" min="-5" max="5" step="0.1" value="-0.5" aria-label="Valor numérico del sesgo b" />
+          </div>
+          <div class="range-ends"><span>−5</span><span>5</span></div>
+        </div>
+
+        <div class="formula-key">
+          La función de activación permanece fija:
+          <br>
+          <strong>z ≥ 0 → y = 1</strong><br>
+          <strong>z &lt; 0 → y = 0</strong>
+        </div>
+
+        <div id="status" class="status" aria-live="polite">
+          <strong>Salida actual:</strong> y = 0
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
